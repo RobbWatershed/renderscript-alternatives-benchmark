@@ -1,4 +1,10 @@
-# RenderScriptMigration Sample
+# RenderScript Alternatives benchmark
+
+Credits and inspiration :
+- https://github.com/android/renderscript-samples (Project base)
+- https://github.com/ttddee/Cascade (Vulkan shaders)
+- https://github.com/cats-oss/android-gpuimage (GLES pipeline and shaders)
+- https://gitlab.com/higan/xml-shaders/-/tree/master/shaders/OpenGL/v1.0 (more GLES shaders)
 
 ## Introduction
 
@@ -7,8 +13,16 @@
 To help developers for the migration, this sample is created to demonstrate how to apply the image filtering to a bitmap with the Vulkan compute pipeline. The sample creates a common ImageProcessor interface, on the top of Vulkan Compute and RenderScript, that performs two compute tasks:
 - HUE rotation: A simple compute task with a single compute kernel.
 - Blur: A more complex compute task which executes two compute kernels sequentially.
+- Resize
 
-Both tasks are implemented with RenderScript (intrinsics & custom scripts) and Vulkan to demonstrate the migration from RenderScript to Vulkan Compute pipeline.
+All tasks are implemented with 
+- RenderScript (intrinsics & custom scripts)
+- Vulkan
+- OpenGL ES 2.0
+- RenderEffect
+
+to demonstrate the migration from RenderScript to Vulkan Compute pipeline.
+
 
 ## Pre-requisites
 
