@@ -43,13 +43,3 @@ to demonstrate the migration from RenderScript to Vulkan Compute pipeline.
 
 <img src="screenshots/hue.png" height="400" alt="Screenshot of Hue Rotation"/>
 <img src="screenshots/blur.png" height="400" alt="Screenshot of Blur"/>
-
-## Support
-
-We highly recommend to use [Stack Overflow](http://stackoverflow.com/questions/tagged/android) to get help from the Andorid community.
-
-If you've found an error in this sample, please file an issue:
-https://github.com/android/renderscript-samples
-
-Patches are encouraged, and may be submitted by forking this project and
-submitting a pull request through GitHub.
