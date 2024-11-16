@@ -2,8 +2,10 @@ package com.android.example.rsmigration
 
 import android.graphics.Bitmap
 import com.awxkee.aire.Aire
+import com.awxkee.aire.EdgeMode
 import com.awxkee.aire.ResizeFunction
 import com.awxkee.aire.ScaleColorSpace
+import com.awxkee.aire.TransferFunction
 import kotlin.math.roundToInt
 
 class AireImageProcessor() : ImageProcessor {
@@ -24,7 +26,9 @@ class AireImageProcessor() : ImageProcessor {
     }
 
     override fun blur(radius: Float, outputIndex: Int): Bitmap {
-        return Aire.gaussianBoxBlur(input, radius.toInt())
+        //return Aire.gaussianBoxBlur(input, radius.toInt())
+        //return Aire.linearGaussianBoxBlur(input, radius.toInt(), TransferFunction.SRGB)
+        return Aire.fastGaussian2Degree(input, radius.roundToInt(), EdgeMode.CLAMP)
     }
 
     override fun resize(percent: Float, outputIndex: Int): Bitmap {
@@ -33,7 +37,7 @@ class AireImageProcessor() : ImageProcessor {
             (input.width * percent).roundToInt(),
             (input.height * percent).roundToInt(),
             ResizeFunction.Bicubic,
-            ScaleColorSpace.XYZ
+            ScaleColorSpace.LINEAR
         )
     }
 
