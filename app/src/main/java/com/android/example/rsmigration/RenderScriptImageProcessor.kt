@@ -33,7 +33,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
+// Kept for history purposes with commented code; doesn't work with API 35 anymore
 class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : ImageProcessor {
     override val name = "RenderScript " + if (useIntrinsic) "Intrinsics" else "Scripts"
 
@@ -42,14 +42,14 @@ class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : Imag
     private val mIntrinsicColorMatrix = ScriptIntrinsicColorMatrix.create(mRS)
     private val mIntrinsicBlur = ScriptIntrinsicBlur.create(mRS, Element.U8_4(mRS))
     private val resizeIntrinsic = ScriptIntrinsicResize.create(mRS)
-    private val mScriptColorMatrix = ScriptC_colormatrix(mRS)
-    private val mScriptBlur = ScriptC_blur(mRS)
+    private val mScriptColorMatrix = null //ScriptC_colormatrix(mRS)
+    private val mScriptBlur = null //ScriptC_blur(mRS)
     private val mUseIntrinsic = useIntrinsic
 
     // Input image
     private lateinit var mInAllocation: Allocation
     private lateinit var inputXY: Pair<Int, Int>
-    private lateinit var inputCfg : Bitmap.Config
+    private lateinit var inputCfg: Bitmap.Config
 
     // Intermediate buffers for the two-pass gaussian blur script
     private lateinit var mTempAllocations: Array<Allocation>
@@ -67,7 +67,7 @@ class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : Imag
         // Input allocation
         mInAllocation = Allocation.createFromBitmap(mRS, inputImage)
         inputXY = Pair(inputImage.width, inputImage.height)
-        inputCfg = inputImage.config
+        inputCfg = requireNotNull(inputImage.config)
 
         // This buffer is only used as the intermediate result in script blur,
         // so only USAGE_SCRIPT is needed.
@@ -80,14 +80,16 @@ class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : Imag
 
         // Output images and allocations
         mOutputImages = Array(numberOfOutputImages) {
-            Bitmap.createBitmap(inputImage.width, inputImage.height, inputImage.config)
+            Bitmap.createBitmap(inputImage.width, inputImage.height, inputCfg)
         }
         mOutAllocations =
             Array(numberOfOutputImages) { i -> Allocation.createFromBitmap(mRS, mOutputImages[i]) }
 
         // Update dimensional variables in blur kernel
+        /*
         mScriptBlur._gWidth = inputImage.width
         mScriptBlur._gHeight = inputImage.height
+         */
     }
 
     override fun rotateHue(radian: Float, outputIndex: Int): Bitmap {
@@ -112,8 +114,10 @@ class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : Imag
             mIntrinsicColorMatrix.setColorMatrix(mat)
             mIntrinsicColorMatrix.forEach(mInAllocation, mOutAllocations[outputIndex])
         } else {
+            /*
             mScriptColorMatrix.invoke_setMatrix(mat)
             mScriptColorMatrix.forEach_root(mInAllocation, mOutAllocations[outputIndex])
+             */
         }
 
         // Copy to bitmap, this should cause a synchronization rather than a full copy.
@@ -155,6 +159,7 @@ class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : Imag
             // filter in a single pass. The two-pass blur algorithm has two kernels, each of
             // time complexity O(iRadius), while the single-pass algorithm has only one kernel,
             // but the time complexity is O(iRadius^2).
+            /*
             mScriptBlur._gRadius = iRadius
             mScriptBlur._gKernel = kernel
             mScriptBlur._gScratch1 = mTempAllocations[0]
@@ -162,6 +167,7 @@ class RenderScriptImageProcessor(context: Context, useIntrinsic: Boolean) : Imag
             mScriptBlur.forEach_copyIn(mInAllocation, mTempAllocations[0])
             mScriptBlur.forEach_horizontal(mTempAllocations[1])
             mScriptBlur.forEach_vertical(mOutAllocations[outputIndex])
+             */
         }
 
         // Copy to bitmap, this should cause a synchronization rather than a full copy.

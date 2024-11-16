@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 35
+    compileSdk 35
 
     // When building this project with with SDK build tools of version earlier than 31.0.0, and
     // minSdkVersion 29+, the RenderScript compiler will fail with the following error message:
@@ -10,7 +10,15 @@ android {
     //     error: target API level '29' is out of range ('11' - '24')
     //
     // This issue has been fixed in SDK build tools 31.0.0.
-    buildToolsVersion '34.0.0'
+    //buildToolsVersion '34.0.0'
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
+    }
 
     namespace "com.android.example.rsmigration"
 
@@ -42,7 +50,6 @@ android {
         }
     }
 
-    /*
     sourceSets {
         main {
             jniLibs {
@@ -50,8 +57,6 @@ android {
             }
         }
     }
-
-     */
 
     lintOptions {
         abortOnError false

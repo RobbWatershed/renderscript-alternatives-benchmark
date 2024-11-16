@@ -36,8 +36,10 @@ class GLESImageProcessor(context: Context) : ImageProcessor {
     override fun configureInputAndOutput(inputImage: Bitmap, numberOfOutputImages: Int) {
         gpuImage.setImage(inputImage)
         inputXY = Pair(inputImage.width, inputImage.height)
-        mOutputImages = Array(numberOfOutputImages) {
-            Bitmap.createBitmap(inputImage.width, inputImage.height, inputImage.config)
+        inputImage.config?.let { cfg ->
+            mOutputImages = Array(numberOfOutputImages) {
+                Bitmap.createBitmap(inputImage.width, inputImage.height, cfg)
+            }
         }
     }
 
