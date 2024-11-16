@@ -5,6 +5,7 @@ Credits and inspiration :
 - https://github.com/ttddee/Cascade (Vulkan shaders)
 - https://github.com/cats-oss/android-gpuimage (GLES pipeline and shaders)
 - https://gitlab.com/higan/xml-shaders/-/tree/master/shaders/OpenGL/v1.0 (more GLES shaders)
+- https://github.com/awxkee/aire (fast image processing)
 
 ## Introduction
 
@@ -20,16 +21,10 @@ All tasks are implemented with
 - Vulkan
 - OpenGL ES 2.0
 - RenderEffect
+- Aire
 
-to demonstrate the migration from RenderScript to Vulkan Compute pipeline.
+to demonstrate the migration from RenderScript to these various alternatives.
 
-
-## Pre-requisites
-
-- Android Studio Arctic Fox 2020.3.1+
-- SDK Build Tools 31.0.0+
-- NDK r20+
-- Android API 29+
 
 ## Getting Started
 
