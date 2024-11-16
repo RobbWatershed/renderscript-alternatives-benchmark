@@ -97,8 +97,10 @@ class MainActivity : AppCompatActivity() {
             RenderScriptImageProcessor(this, useIntrinsic = false),
             // Vulkan compute pipeline
             VulkanImageProcessor(this),
-            // Vulkan compute pipeline
-            GLESImageProcessor(this)
+            // OpenGL compute pipeline
+            GLESImageProcessor(this),
+            // aire compute pipeline
+            AireImageProcessor()
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -170,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                mFilterMode = FilterMode.values()[position]
+                mFilterMode = FilterMode.entries.toTypedArray()[position]
                 startUpdateImage(mSeekBar.progress)
             }
 
