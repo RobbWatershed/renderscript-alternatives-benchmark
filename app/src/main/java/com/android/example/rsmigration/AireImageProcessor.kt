@@ -36,7 +36,7 @@ class AireImageProcessor() : ImageProcessor {
             input,
             (input.width * percent).roundToInt(),
             (input.height * percent).roundToInt(),
-            ResizeFunction.Bicubic,
+            ResizeFunction.Lanczos3,
             ScaleColorSpace.LINEAR
         )
     }
