@@ -26,7 +26,7 @@ android {
         applicationId "com.android.example.rsmigration"
         minSdkVersion 29 // API26 = Native Hardware Buffer; API29 = ??
         targetSdkVersion 35
-        ndkVersion '22.0.7026061'
+
         renderscriptTargetApi 23
         versionCode 1
         versionName "1.0"

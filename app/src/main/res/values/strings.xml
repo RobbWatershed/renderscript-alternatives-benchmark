@@ -11,6 +11,7 @@
     <string name="vulkan">Vulkan</string>
     <string name="gles">GL ES</string>
     <string name="aire">aire</string>
+    <string name="open_gles">OpenGLES</string>
     <string name="render_effect">RenderEffect</string>
 
     <string-array name="processor_array" tools:ignore="InconsistentArrays">
@@ -19,6 +20,7 @@
         <item>@string/vulkan</item>
         <item>@string/gles</item>
         <item>@string/aire</item>
+        <item>@string/open_gles</item>
     </string-array>
     <string name="filter_spinner_label">Choose filter:</string>
     <string-array name="filter_array">
