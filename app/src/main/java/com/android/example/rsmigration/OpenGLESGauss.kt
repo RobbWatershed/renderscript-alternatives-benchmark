@@ -615,15 +615,17 @@ class OpenGLESBlurRenderPass(private val mContext: Context, private var allowGLE
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
 
+        GLES20.glFinish()
+
+        GLES20.glDisableVertexAttribArray(vaVertexPositionLocation)
+        GLES20.glDisableVertexAttribArray(vaTexCoordLocation)
+
         val buffer = ByteBuffer.allocateDirect(bitmap.width * bitmap.height * 4).order(ByteOrder.nativeOrder())
         GLES20.glReadPixels(0, 0, bitmap.width, bitmap.height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer)
 
         // Convert buffer to Bitmap
         val outputBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         outputBitmap.copyPixelsFromBuffer(buffer)
-
-        GLES20.glDisableVertexAttribArray(vaVertexPositionLocation)
-        GLES20.glDisableVertexAttribArray(vaTexCoordLocation)
 
         return outputBitmap
     }
