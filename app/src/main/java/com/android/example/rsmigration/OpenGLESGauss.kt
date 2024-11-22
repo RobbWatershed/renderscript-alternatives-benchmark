@@ -38,21 +38,23 @@ val BLUR_VERTEX_SHADER: String = """
 val FRAGMENT_HORIZONTAL_BLUR_SHADER: String = """
 precision mediump float;
 
-uniform sampler2D u_Texture;   
+uniform sampler2D u_Texture;
 uniform float kernel[512];
 uniform int radius;
 uniform vec2 texelSize;
-varying vec2 vTexCoord;        
+varying vec2 vTexCoord;
 
 void main() {
-    vec4 color = vec4(0.0);
+    vec4 color = texture2D(u_Texture, vTexCoord) * kernel[radius];
     int vx = 0;
-    for (int x = -radius; x < radius; x++) {
-        vec2 offset = vec2(x, 0) * texelSize;
-        vec4 lc = texture2D(u_Texture, vTexCoord + offset);
+    for (int x = 0; x < radius; x++) {
+        vec2 offset0 = vec2(-radius + x, 0) * texelSize;
+        vec4 lc = texture2D(u_Texture, vTexCoord + offset0);
+        vec2 offset1 = vec2(radius - x - 1, 0) * texelSize;
+        vec4 lc1 = texture2D(u_Texture, vTexCoord + offset1);
         float w = kernel[vx];
         vec4 weight = vec4(w);
-        color = color + lc * weight;
+        color = color + (lc + lc1) * weight;
         vx++;
     }
     gl_FragColor = color;
@@ -69,15 +71,17 @@ uniform vec2 texelSize;
 varying vec2 vTexCoord;        
 
 void main() {
-    vec4 color = vec4(0.0);
-    int vx = 0;
-    for (int y = -radius; y < radius; y++) {
-        vec2 offset = vec2(0, y) * texelSize;
-        vec4 lc = texture2D(u_Texture, vTexCoord + offset);
-        float w = kernel[vx];
+    vec4 color = texture2D(u_Texture, vTexCoord) * kernel[radius];
+    int vy = 0;
+    for (int y = 0; y < radius; y++) {
+        vec2 offset0 = vec2(0, -radius + y) * texelSize;
+        vec4 lc = texture2D(u_Texture, vTexCoord + offset0);
+        vec2 offset1 = vec2(0, radius - y - 1) * texelSize;
+        vec4 lc1 = texture2D(u_Texture, vTexCoord + offset1);
+        float w = kernel[vy];
         vec4 weight = vec4(w);
-        color = color + lc * weight;
-        vx++;
+        color = color + (lc + lc1) * weight;
+        vy++;
     }
     gl_FragColor = color;
 }
@@ -150,7 +154,7 @@ var VERTICAL_GLES3_COMP = """
 fun checkGlErrorImpl() {
     var error: Int
     var noError = true
-    while (run { error = GLES31.glGetError(); error } != GLES31.GL_NO_ERROR) {
+    while (run { error = GLES20.glGetError(); error } != GLES20.GL_NO_ERROR) {
         val method = Thread.currentThread().stackTrace[3].methodName
         val lineNumber = Thread.currentThread().stackTrace[3].lineNumber
         Log.d(
@@ -173,7 +177,7 @@ inline fun <R> checkGLError(block: () -> R): R {
 
 private const val MAX_POSSIBLE_KERNEL_SIZE = 512
 
-private val TEXTURE_COORDINATES = floatArrayOf(
+val TEXTURE_COORDINATES = floatArrayOf(
     //x,    y
     0.0f, 1.0f,
     0.0f, 0.0f,
@@ -250,7 +254,7 @@ private fun getSigmaSize(kernelSize: Int): Float {
     return 0.3f * ((safeKernelSize - 1f) * 0.5f - 1f) + 0.8f
 }
 
-private fun createGLES20ShaderProgram(vertexShaderCode: String, fragmentShaderCode: String): Int {
+fun createGLES20ShaderProgram(vertexShaderCode: String, fragmentShaderCode: String): Int {
     val vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
     GLES20.glShaderSource(vertexShader, vertexShaderCode)
     GLES20.glCompileShader(vertexShader)
@@ -267,7 +271,7 @@ private fun createGLES20ShaderProgram(vertexShaderCode: String, fragmentShaderCo
     return program
 }
 
-private fun isGLES31Supported(context: Context): Boolean {
+fun isGLES31Supported(context: Context): Boolean {
     val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     val configurationInfo = activityManager.deviceConfigurationInfo
     val esVersion = configurationInfo.reqGlEsVersion
@@ -384,13 +388,13 @@ class OpenGLESBlurRenderPass(private val mContext: Context, private var allowGLE
             EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)
 
             if (isGLES3Used) {
-                val newBitmap = renderGLES30(bitmap, radius)
+                val newBitmap = renderGLES30(bitmap, radius.coerceAtLeast(1))
                 oldWidth = newBitmap.width
                 oldHeight = newBitmap.height
                 EGL14.eglMakeCurrent(eglDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
                 return newBitmap
             } else {
-                val newBitmap = renderGLES20(bitmap, radius)
+                val newBitmap = renderGLES20(bitmap, radius.coerceAtLeast(1))
                 oldWidth = newBitmap.width
                 oldHeight = newBitmap.height
                 EGL14.eglMakeCurrent(eglDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)

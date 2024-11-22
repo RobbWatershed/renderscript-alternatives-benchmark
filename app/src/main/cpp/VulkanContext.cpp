@@ -79,11 +79,55 @@ bool VulkanContext::checkInstanceVersion() {
     return true;
 }
 
+bool VulkanContext::isVulkanExtensionSupported(std::string &extName) {
+    uint32_t instance_extension_count;
+    auto v0 = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+    if (v0 != VkResult::VK_SUCCESS) {
+        return false;
+    }
+    std::vector<VkExtensionProperties> available_instance_extensions(instance_extension_count);
+    v0 = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, available_instance_extensions.data());
+    if (v0 != VkResult::VK_SUCCESS) {
+        return false;
+    }
+    for (auto &available_extension : available_instance_extensions)
+    {
+        if (std::string(available_extension.extensionName) == extName)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool VulkanContext::isValidationLayerSupported(std::string &layerName) {
+    uint32_t layerCount = 0;
+    auto v0 = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    if (v0 != VkResult::VK_SUCCESS) {
+        return false;
+    }
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    auto v1 = vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+    if (v1 != VkResult::VK_SUCCESS) {
+        return false;
+    }
+
+    for (const auto& layer : availableLayers) {
+        if (std::string(layer.layerName) == layerName) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool VulkanContext::createInstance(bool enableDebug) {
     // Required instance layers
     std::vector<const char*> instanceLayers;
-    if (enableDebug) {
-//        instanceLayers.push_back("VK_LAYER_KHRONOS_validation");
+    std::string validationLayer = "VK_LAYER_KHRONOS_validation";
+    bool isValidationLayerAvailable = isValidationLayerSupported(validationLayer);
+    if (enableDebug && isValidationLayerAvailable) {
+        instanceLayers.push_back("VK_LAYER_KHRONOS_validation");
     }
 
     // Required instance extensions
@@ -91,7 +135,9 @@ bool VulkanContext::createInstance(bool enableDebug) {
             VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
             VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
     };
-    if (enableDebug) {
+    std::string debugExtensionName = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+    bool isDebugExtensionAvailable = isVulkanExtensionSupported(debugExtensionName);
+    if (enableDebug && isDebugExtensionAvailable) {
         instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
