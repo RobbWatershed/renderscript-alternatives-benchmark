@@ -3,9 +3,7 @@ package com.android.example.rsmigration
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.awxkee.aire.Aire
-import com.awxkee.aire.ResizeFunction
-import com.awxkee.aire.ScaleColorSpace
+import android.util.Size
 import com.example.simpleegl.OpenGLESBlurRenderPass
 import kotlin.math.roundToInt
 
@@ -15,6 +13,7 @@ class OpenGLESImageProcessor(val context: Context) : ImageProcessor {
     var numberOfOutputImages = 1
 
     private var blurRenderPass: OpenGLESBlurRenderPass? = null
+    private var resizeRenderPass: OpenGLESResizeRenderPass? = null
 
     override fun configureInputAndOutput(
         inputImage: Bitmap,
@@ -36,12 +35,17 @@ class OpenGLESImageProcessor(val context: Context) : ImageProcessor {
     }
 
     override fun resize(percent: Float, outputIndex: Int): Bitmap {
-        return Aire.scale(
+        if (resizeRenderPass == null) {
+            resizeRenderPass = OpenGLESResizeRenderPass(context)
+        }
+        return resizeRenderPass!!.resize(
             input,
-            (input.width * percent).roundToInt(),
-            (input.height * percent).roundToInt(),
-            ResizeFunction.Spline36,
-            ScaleColorSpace.SRGB
+            Size(
+                (input.width.toFloat() * percent).roundToInt().coerceAtLeast(1),
+                (input.height.toFloat() * percent).roundToInt().coerceAtLeast(1)
+            ),
+            SamplerMethod.LANCZOS,
+            Antialiasing.NO_ANTIALIAS,
         )
     }
 
