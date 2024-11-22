@@ -100,11 +100,12 @@ class MainActivity : AppCompatActivity() {
             // OpenGL compute pipeline
             GLESImageProcessor(this),
             // aire compute pipeline
-            AireImageProcessor()
+            AireImageProcessor(this),
+            // OpenGLES 2/3 pipeline
+            OpenGLESImageProcessor(this)
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // RenderEffect
             imageProcessors.add(RenderEffectImageProcessor())
         }
         mImageProcessors = imageProcessors.toTypedArray()

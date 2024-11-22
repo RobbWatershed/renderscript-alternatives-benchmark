@@ -83,7 +83,7 @@ bool VulkanContext::createInstance(bool enableDebug) {
     // Required instance layers
     std::vector<const char*> instanceLayers;
     if (enableDebug) {
-        instanceLayers.push_back("VK_LAYER_KHRONOS_validation");
+//        instanceLayers.push_back("VK_LAYER_KHRONOS_validation");
     }
 
     // Required instance extensions
