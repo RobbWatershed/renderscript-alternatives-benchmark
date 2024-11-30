@@ -3,22 +3,18 @@ package com.android.example.rsmigration
 import android.content.Context
 import android.graphics.Bitmap
 import android.opengl.EGL14
-import android.opengl.EGL15
 import android.opengl.EGLConfig
 import android.opengl.EGLContext
 import android.opengl.EGLDisplay
-import android.opengl.EGLExt
 import android.opengl.EGLSurface
 import android.opengl.GLES20
 import android.opengl.GLES31
 import android.opengl.GLUtils
-import android.os.Build
 import android.util.Size
 import com.example.simpleegl.BLUR_VERTEX_SHADER
 import com.example.simpleegl.TEXTURE_COORDINATES
 import com.example.simpleegl.checkGLError
 import com.example.simpleegl.createGLES20ShaderProgram
-import com.example.simpleegl.isGLES31Supported
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -32,7 +28,6 @@ enum class Antialiasing(internal val value: Int) {
 }
 
 var NEAREST_VERT: String = """
-    #version 100
     precision mediump float;
 
     uniform sampler2D u_Texture;
@@ -43,9 +38,9 @@ var NEAREST_VERT: String = """
 
     void main() {
         float scale = float(sourceSize.y) / float(targetSize.y);
-        float centerV = min((vTexCoord.y*float(sourceSize.y) + 0.5) * scale, float(sourceSize.y) - 1.0f);
+        float centerV = min((vTexCoord.y*float(sourceSize.y) + 0.5) * scale, float(sourceSize.y) - 1.0);
        
-        float center = centerV - 0.5f;
+        float center = centerV - 0.5;
 
         vec2 sourceOffset = vec2(vTexCoord.x, (centerV - 0.5) * texelSize.y);
         vec4 color = texture2D(u_Texture, sourceOffset);
@@ -55,7 +50,6 @@ var NEAREST_VERT: String = """
 """.trimIndent()
 
 val NEAREST_HORIZ: String = """
-    #version 100
     precision mediump float;
 
     uniform sampler2D u_Texture;
@@ -66,8 +60,8 @@ val NEAREST_HORIZ: String = """
 
     void main() {
         float scale = float(sourceSize.x) / float(targetSize.x);
-        float centerV = min((vTexCoord.x*float(sourceSize.x) + 0.5) * scale, float(sourceSize.x) - 1.0f);
-        float center = centerV - 0.5f;
+        float centerV = min((float(vTexCoord.x)*float(sourceSize.x) + 0.5) * scale, float(sourceSize.x) - 1.0);
+        float center = centerV - 0.5;
         vec2 sourceOffset = vec2((centerV - 0.5) * texelSize.x, vTexCoord.y);
         vec4 color = texture2D(u_Texture, sourceOffset);
         gl_FragColor = color;
@@ -75,7 +69,6 @@ val NEAREST_HORIZ: String = """
 """.trimIndent()
 
 val BILINEAR_HORIZ: String = """
-#version 100
 precision mediump float;
 
 uniform sampler2D u_Texture;
@@ -87,33 +80,33 @@ varying vec2 vTexCoord;
 
 float bilinear(float x) {
     x = abs(x);
-    if (x < 1.0f) {
-        return 1.0f - x;
+    if (x < 1.0) {
+        return 1.0 - x;
     } else {
-        return 0.0f;
+        return 0.0;
     }
 }
 
 void main() {
     float scale = float(sourceSize.x) / float(targetSize.x);
-    float centerV = min((vTexCoord.x*float(sourceSize.x) + 0.5) * scale, float(sourceSize.x) - 1.0f);
-    float filterRadius = 1.0f;
+    float centerV = min((vTexCoord.x*float(sourceSize.x) + 0.5) * scale, float(sourceSize.x) - 1.0);
+    float filterRadius = 1.0;
     if (antialiasing == 1) {
-        filterRadius = 1.0f * scale;
+        filterRadius = 1.0 * scale;
     }
-    int start = int(max(floor(centerV - filterRadius), 0.0f));
-    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.x) - 1.0f));
+    int start = int(max(floor(centerV - filterRadius), 0.0));
+    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.x) - 1.0));
     int length = end - start;
     if (length < 0) {
         discard;
     }
-    float filterScale = 1.0f;
+    float filterScale = 1.0;
     if (antialiasing == 1) {
-        filterScale = 1.0f / scale;
+        filterScale = 1.0 / scale;
     }
-    float weightSum = 0.0f;
+    float weightSum = 0.0;
 
-    float center = centerV - 0.5f;
+    float center = centerV - 0.5;
 
     vec4 color = vec4(0f);
 
@@ -127,7 +120,7 @@ void main() {
         color += wColor;
     }
 
-    if (weightSum != 0.0f) {
+    if (weightSum != 0.0) {
         color = color / weightSum;
     }
 
@@ -136,7 +129,6 @@ void main() {
 """.trimIndent()
 
 val BILINEAR_VERTICAL: String = """
-#version 100
 precision mediump float;
 
 uniform sampler2D u_Texture;
@@ -148,33 +140,33 @@ varying vec2 vTexCoord;
 
 float bilinear(float x) {
     x = abs(x);
-    if (x < 1.0f) {
-        return 1.0f - x;
+    if (x < 1.0) {
+        return 1.0 - x;
     } else {
-        return 0.0f;
+        return 0.0;
     }
 }
 
 void main() {
     float scale = float(sourceSize.y) / float(targetSize.y);
-    float centerV = min((vTexCoord.y*float(sourceSize.y) + 0.5) * scale, float(sourceSize.y) - 1.0f);
-    float filterRadius = 1.0f;
+    float centerV = min((vTexCoord.y*float(sourceSize.y) + 0.5) * scale, float(sourceSize.y) - 1.0);
+    float filterRadius = 1.0;
     if (antialiasing == 1) {
-        filterRadius = 1.0f * scale;
+        filterRadius = 1.0 * scale;
     }
-    int start = int(max(floor(centerV - filterRadius), 0.0f));
-    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.y) - 1.0f));
+    int start = int(max(floor(centerV - filterRadius), 0.0));
+    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.y) - 1.0));
     int length = end - start;
     if (length < 0) {
         discard;
     }
-    float filterScale = 1.0f;
+    float filterScale = 1.0;
     if (antialiasing == 1) {
-        filterScale = 1.0f / scale;
+        filterScale = 1.0 / scale;
     }
-    float weightSum = 0.0f;
+    float weightSum = 0.0;
 
-    float center = centerV - 0.5f;
+    float center = centerV - 0.5;
 
     vec4 color = vec4(0f);
 
@@ -188,7 +180,7 @@ void main() {
         color += wColor;
     }
 
-    if (weightSum != 0.0f) {
+    if (weightSum != 0.0) {
         color = color / weightSum;
     }
 
@@ -197,7 +189,6 @@ void main() {
 """.trimIndent()
 
 val LANCZOS_HORIZ: String = """
-#version 100
 precision mediump float;
 
 uniform sampler2D u_Texture;
@@ -208,43 +199,43 @@ uniform int antialiasing;
 varying vec2 vTexCoord;
 
 float sinc(float x) {
-    if (x == 0.0f) {
-        return 1.0f;
+    if (x == 0.0) {
+        return 1.0;
     }
     return sin(x) / x;
 }
 
 float lanczos3(float x) {
-    float scale_a = 1.0f / 3.0f;
-    if (abs(x) < 3.0f) {
-        float d = 3.14159265358979f * x;
+    float scale_a = 1.0 / 3.0;
+    if (abs(x) < 3.0) {
+        float d = 3.14159265358979 * x;
         return sinc(d) * sinc(d * scale_a);
     }
-    return 0.0f;
+    return 0.0;
 }
 
 void main() {
     float scale = float(sourceSize.x) / float(targetSize.x);
-    float centerV = min((vTexCoord.x*float(sourceSize.x) + 0.5) * scale, float(sourceSize.x) - 1.0f);
-    float filterRadius = 1.5f;
+    float centerV = min((vTexCoord.x*float(sourceSize.x) + 0.5) * scale, float(sourceSize.x) - 1.0);
+    float filterRadius = 1.5;
     if (antialiasing == 1) {
-        filterRadius = 1.5f * scale;
+        filterRadius = 1.5 * scale;
     }
-    int start = int(max(floor(centerV - filterRadius), 0.0f));
-    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.x) - 1.0f));
+    int start = int(max(floor(centerV - filterRadius), 0.0));
+    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.x) - 1.0));
     int length = end - start;
     if (length < 0) {
         discard;
     }
-    float filterScale = 1.0f;
+    float filterScale = 1.0;
     if (antialiasing == 1) {
-        filterScale = 1.0f / scale;
+        filterScale = 1.0 / scale;
     }
-    float weightSum = 0.0f;
+    float weightSum = 0.0;
 
-    float center = centerV - 0.5f;
+    float center = centerV - 0.5;
 
-    vec4 color = vec4(0f);
+    vec4 color = vec4(0.0);
 
     for (int i = start; i < end; i++) {
         float xPosition = float(i) * texelSize.x;
@@ -256,7 +247,7 @@ void main() {
         color += wColor;
     }
 
-    if (weightSum != 0.0f) {
+    if (weightSum != 0.0) {
         color = color / weightSum;
     }
 
@@ -265,7 +256,6 @@ void main() {
 """.trimIndent()
 
 val LANCZOS_VERT: String = """
-#version 100
 precision mediump float;
 
 uniform sampler2D u_Texture;
@@ -276,43 +266,43 @@ uniform int antialiasing;
 varying vec2 vTexCoord;
 
 float sinc(float x) {
-    if (x == 0.0f) {
-        return 1.0f;
+    if (x == 0.0) {
+        return 1.0;
     }
     return sin(x) / x;
 }
 
 float lanczos3(float x) {
-    float scale_a = 1.0f / 3.0f;
-    if (abs(x) < 3.0f) {
-        float d = 3.14159265358979f * x;
+    float scale_a = 1.0 / 3.0;
+    if (abs(x) < 3.0) {
+        float d = 3.14159265358979 * x;
         return sinc(d) * sinc(d * scale_a);
     }
-    return 0.0f;
+    return 0.0;
 }
 
 void main() {
     float scale = float(sourceSize.y) / float(targetSize.y);
-    float centerV = min((vTexCoord.y*float(sourceSize.y) + 0.5) * scale, float(sourceSize.y) - 1.0f);
-    float filterRadius = 1.5f;
+    float centerV = min((vTexCoord.y*float(sourceSize.y) + 0.5) * scale, float(sourceSize.y) - 1.0);
+    float filterRadius = 1.5;
     if (antialiasing == 1) {
-        filterRadius = 1.5f * scale;
+        filterRadius = 1.5 * scale;
     }
-    int start = int(max(floor(centerV - filterRadius), 0.0f));
-    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.y) - 1.0f));
+    int start = int(max(floor(centerV - filterRadius), 0.0));
+    int end = int(min(ceil(centerV + filterRadius), float(sourceSize.y) - 1.0));
     int length = end - start;
     if (length < 0) {
         discard;
     }
-    float filterScale = 1.0f;
+    float filterScale = 1.0;
     if (antialiasing == 1) {
-        filterScale = 1.0f / scale;
+        filterScale = 1.0 / scale;
     }
-    float weightSum = 0.0f;
+    float weightSum = 0.0;
 
-    float center = centerV - 0.5f;
+    float center = centerV - 0.5;
 
-    vec4 color = vec4(0f);
+    vec4 color = vec4(0.0);
 
     for (int i = start; i < end; i++) {
         float yPosition = float(i) * texelSize.y;
@@ -324,16 +314,21 @@ void main() {
         color += wColor;
     }
 
-    if (weightSum != 0.0f) {
+    if (weightSum != 0.0) {
         color = color / weightSum;
     }
+
+    //    vec2 sourceOffset = vec2((centerV - 0.5) * texelSize.x, vTexCoord.y);
+    //    vec4 color = texture2D(u_Texture, sourceOffset);
+    //
+    //    vec2 sourceOffset = vec2((float(start) - 0.5) * texelSize.x, vTexCoord.y);
+    //    vec4 color = texture2D(u_Texture, sourceOffset);
 
     gl_FragColor = color;
 }
 """.trimIndent()
 
 class OpenGLESResizeRenderPass(private val mContext: Context) {
-    private var isGLES3Used = false
 
     private var textureIds: IntArray
     private var frameBuffers: IntArray
@@ -353,10 +348,6 @@ class OpenGLESResizeRenderPass(private val mContext: Context) {
     private var oldHeight: Int = -1
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            isGLES3Used = isGLES31Supported(mContext)
-        }
-
         // Surface and EGL can be reused where possible
         eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
         EGL14.eglInitialize(eglDisplay!!, null, 0, null, 0)
@@ -381,27 +372,14 @@ class OpenGLESResizeRenderPass(private val mContext: Context) {
         )
         eglSurface = EGL14.eglCreatePbufferSurface(eglDisplay!!, configs[0], pbufferAttribs, 0)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isGLES3Used) {
-            val glAttributes = intArrayOf(
-                EGL15.EGL_CONTEXT_MAJOR_VERSION, 3,
-                EGL15.EGL_CONTEXT_MINOR_VERSION, 1,
-                EGL15.EGL_CONTEXT_OPENGL_DEBUG, EGL14.EGL_TRUE,
-                EGLExt.EGL_CONTEXT_FLAGS_KHR, EGL14.EGL_TRUE,
-                EGL14.EGL_NONE
-            )
-            eglContext = EGL14.eglCreateContext(
-                eglDisplay, configs[0], EGL14.EGL_NO_CONTEXT, glAttributes, 0
-            )
-        } else {
-            val contextAttribs = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
-            eglContext = EGL14.eglCreateContext(
-                eglDisplay,
-                configs[0],
-                EGL14.EGL_NO_CONTEXT,
-                contextAttribs,
-                0
-            )
-        }
+        val contextAttribs = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
+        eglContext = EGL14.eglCreateContext(
+            eglDisplay,
+            configs[0],
+            EGL14.EGL_NO_CONTEXT,
+            contextAttribs,
+            0
+        )
 
         EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)
 
