@@ -71,6 +71,8 @@ class VulkanContext {
     bool pickPhysicalDeviceAndQueueFamily();
     bool createDevice();
     bool createPools();
+    static bool isValidationLayerSupported(std::string &layerName);
+    static bool isVulkanExtensionSupported(std::string &extName);
 
     // Instance
     uint32_t mInstanceVersion = 0;
